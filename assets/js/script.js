@@ -5,30 +5,19 @@ let nextId = JSON.parse(localStorage.getItem("nextId"));
 // Todo: create a function to generate a unique task id
 function generateTaskId() {
     return Math.random().toString(36);
-
-
 }
 
 // Todo: create a function to create a task card
 function createTaskCard(task) {
-    const taskCard = $('<div>')
-        .addClass('card project-card draggable my-3')
-        .attr('data-project-id', project.id);
-    const cardHeader = $('<div>').addClass('card-header h4').text(project.name);
-    const cardBody = $('<div>').addClass('card-body');
-    const cardDescription = $('<p>').addClass('card-text').text(project.type);
-    const cardDueDate = $('<p>').addClass('card-text').text(project.dueDate);
-    const cardDeleteBtn = $('<button>')
-        .addClass('btn btn-danger delete')
-        .text('Delete')
-        .attr('data-project-id', project.id);
-    cardDeleteBtn.on('click', handleDeleteProject);
-
-    if (project.dueDate && project.status !== 'done') {
-        const now = dayjs();
-        const taskDueDate = dayjs(project.dueDate, 'DD/MM/YYYY');
-
-
+    function createTaskCard(title, description, dueDate, status) {
+        // Created a new task card with return
+        const taskCard = {
+            title: title,
+            description: description,
+            dueDate: dueDate,
+            status: status,
+        };
+        return taskCard;
     }
 }
 
@@ -53,9 +42,9 @@ function createTaskCard(task) {
         event.preventDefault()
         const load = {
             id: generateTaskId(),
-            title: $("ml-decree").val(),
-            description: $("ml-duration").val(),
-            dueDate: $("ml-directive").val(),
+            title: $("mlTitle").val(),
+            description: $("mlDescription").val(),
+            dueDate: $("mlDeadline").val(),
             status: "to-do",
         }
         localStorage.setItem("load", JSON.stringify(task));
