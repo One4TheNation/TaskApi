@@ -4,45 +4,46 @@ let nextId = JSON.parse(localStorage.getItem("nextId"));
 
 // Todo: create a function to generate a unique task id
 function generateTaskId() {
-    const RANDOM_ID = Math.random().toString(36);
-    return RANDOM_ID;
+    const randomId = Math.random().toString(36);
+    return randomId;
 }
 
 // Todo: create a function to create a task card
 function createTaskCard(task) {
+    const taskCard = $("<div>");
+    taskCard.addClass("card task-card draggable mb-3");
+    taskCard.attr("id", task.id);
+    console.log(task.title);
+    const taskCardHeader = $("<div>").addClass("card-header h4").text(task.title);
+    const infoEl = `
+    <div>
+            <div class="modal-body">
+            <h3>${task.title}</h3>
+            <h5>${task.dueDate}</h5>
+            <p>${task.description}</p>
+                <button>delete</button>
+        </div>
+    </div>`
+    taskCard.append(infoEl);
+    $("#todo-cards").append(taskCard);
 
-    const taskCard = $(`
-    <div class="">
-        <h3>${task.title}</h3>
-    </div>
-    `);
-
-    $("#todo-cards").append(taskCard)
 }
+
 
 
 // Todo: create a function to render the task list and make cards draggable
 //Added Draggable
 function renderTaskList() {
-    const tasks = JSON.parse(localStorage.getItem('load')) || [];
 
-    tasks.forEach(function(task) {
+    $("#todo-cards").empty();
+    let tasks = JSON.parse(localStorage.getItem('load')) || [];
+    tasks.forEach(function (task) {
         createTaskCard(task)
     })
-
-
-    // $(".draggable").draggable({
-    //     opacity: 1,
-    //     zIndex: 100,
-    //     helper: function (e) {
-    //         const original = $(e.target).hasClass("ui-draggable")
-    //             ? $(e.target)
-    //             : $(e.target).closest("ui-draggable");
-    //         return original.clone().css({
-    //             width: original.outerWidth(),
-    //         });
-    //     },
-    // });
+    $(".draggable").draggable({
+        opacity: 1,
+        zIndex: 100,
+    });
 }
 
 // Todo: create a function to handle adding a new task
@@ -52,38 +53,60 @@ function handleAddTask(event) {
     const tasks = JSON.parse(localStorage.getItem('load')) || [];
     const load = {
         id: generateTaskId(),
-        title: $("mlTitle").val(),
-        description: $("mlDescription").val(),
-        dueDate: $("mlDeadline").val(),
-        status: "to-do",
+        title: $("#mlTitle").val(),
+        description: $("#mlDescription").val(),
+        dueDate: $("#mlDeadline").val(),
+        status: "todo",
     }
-
     tasks.push(load);
     localStorage.setItem("load", JSON.stringify(tasks));
+    renderTaskList()
 }
 
 // Todo: create a function to handle deleting a task
 //Id Button Function on Delete
 function handleDeleteTask(event) {
-    const cardDeleteBtn = $('<button>')
-        .addClass('btn btn-danger delete')
-        .text('Delete')
-        .attr('data-project-id', project.id);
-    cardDeleteBtn.on('click', handleDeleteProject);
+    const id = $(this).attr("id");
+    console.log(id);
+
+    let tasks = JSON.parse(localStorage.getItem("load")) || [];
+    const newTaskList = tasks.filter(function(load) {
+        return tasks.id !== id
+    });
+
+    localStorage.setItem("load", JSON.stringify(newTaskList));
+
+    renderTaskList();
 
 }
 
 // Todo: create a function to handle dropping a task into a new status lane
 function handleDrop(event, ui) {
-
+    const task = readTaskFromStorage();
+    const taskCard = ui.draggable[0].dataset.nextId;
+    const newMemo = event.target.card;
+    for (let task of task) {
+        if (task.card === taskCard) {
+            task.memo = newMemo;
+        }
+    }
+    localStorage.setItem("load", JSON.stringify(task));
+    printProjectData();
 }
 
 // Todo: when the page loads, render the task list, add event listeners, make lanes droppable, and make the due date field a date picker
 $(document).ready(function () {
     // Made sure to add date picker with query
+    renderTaskList()
     $("#memo").on("click", handleAddTask);
-    $("#due-date").datepicker({
+    $("#mlDeadline").datepicker({
         changeMonth: true,
         changeYear: true,
+    });
+
+    // Droppable & Draggable Lanes
+    $('.lane').droppable({
+        accept: '.draggable',
+        drop: handleDrop,
     });
 });
